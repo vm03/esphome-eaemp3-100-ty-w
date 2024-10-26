@@ -1,0 +1,471 @@
+esphome:
+  name: eaemp3
+  name_add_mac_suffix: true
+  project:
+    name: "eaemp3.vasy"
+    version: "0.9.0"
+
+bk72xx:
+  board: generic-bk7231n-qfn32-tuya
+  framework:
+    version: latest
+    sdk_silent: auto
+    options:
+      LT_LOG_HEAP: 1
+      LT_UART_DEFAULT_PORT: 1
+      LT_UART_SILENT_ENABLED: 1
+
+uart:
+  rx_pin: RX1
+  tx_pin: TX1
+  baud_rate: 9600
+
+tuya:
+  time_id: sntp_time
+  on_datapoint_update:
+   - sensor_datapoint: 113
+     datapoint_type: raw
+     then:
+      - lambda: |-
+          id(voltageL1).publish_state((x[0] << 8 | x[1]));
+          id(currentL1).publish_state((x[3] << 8 | x[4]));
+          id(powerL1).publish_state((x[6] << 8 | x[7]));
+          id(frequencyL1).publish_state((x[13] << 8 | x[14]));
+          id(pfL1).publish_state((x[11] << 8 | x[12]));
+          id(rpowerL1).publish_state((x[9] << 8 | x[10]));
+
+   - sensor_datapoint: 114
+     datapoint_type: raw
+     then:
+      - lambda: |-
+          id(voltageL2).publish_state((x[0] << 8 | x[1]));
+          id(currentL2).publish_state((x[3] << 8 | x[4]));
+          id(powerL2).publish_state((x[6] << 8 | x[7]));
+          id(frequencyL2).publish_state((x[13] << 8 | x[14]));
+          id(pfL2).publish_state((x[11] << 8 | x[12]));
+          id(rpowerL2).publish_state((x[9] << 8 | x[10]));
+
+   - sensor_datapoint: 115
+     datapoint_type: raw
+     then:
+      - lambda: |-
+          id(voltageL3).publish_state((x[0] << 8 | x[1]));
+          id(currentL3).publish_state((x[3] << 8 | x[4]));
+          id(powerL3).publish_state((x[6] << 8 | x[7]));
+          id(frequencyL3).publish_state((x[13] << 8 | x[14]));
+          id(pfL3).publish_state((x[11] << 8 | x[12]));
+          id(rpowerL3).publish_state((x[9] << 8 | x[10]));
+
+   - sensor_datapoint: 117
+     datapoint_type: raw
+     then:
+      - lambda: |-
+          id(energy).publish_state((x[2] << 8 | x[3]));
+          id(energyf).publish_state((x[6] << 8 | x[7]));
+          id(energyr).publish_state((x[10] << 8 | x[11]));
+          id(energyl1).publish_state((x[26] << 8 | x[27]));
+          id(energyl2).publish_state((x[30] << 8 | x[31]));
+          id(energyl3).publish_state((x[34] << 8 | x[35]));
+
+switch:
+  - platform: "tuya"
+    id: "meter_power_relay"
+    name: "Power Switch"
+    switch_datapoint: 16
+    icon: "mdi:power"
+
+  - platform: "uart"
+    id: sw_tuya_query_status
+    data: [0x55, 0xaa, 0x00, 0x08, 0x00, 0x00, 0x07]
+    name: "Update values"
+    icon: mdi:reload
+
+
+sensor:
+  - platform: uptime
+    name: "Uptime $hostname"
+    id: uptime_s
+    update_interval: 60s
+
+  # Voltage L1
+  - platform: template
+    id: voltageL1
+    name: "Voltage L1"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "V"
+    icon: "mdi:sine-wave"
+    device_class: "Voltage"
+    state_class: measurement
+
+  # Current L1
+  - platform: template
+    id: currentL1
+    name: "Current L1"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "A"
+    icon: "mdi:current-ac"
+    device_class: "current"
+    state_class: measurement
+
+  # active power L1
+  - platform: template
+    id: powerL1
+    name: "Power L1"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    device_class: "power"
+    state_class: measurement
+
+  # reactive power L1
+  - platform: template
+    id: rpowerL1
+    name: "Reactive Power L1"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 1
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    device_class: "power"
+    state_class: measurement
+
+  # Frequency L1
+  - platform: template
+    id: frequencyL1
+    name: "Frequency L1"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "Hz"
+    icon: "mdi:sine-wave"
+    device_class: "frequency"
+    state_class: measurement
+
+  # Power Factor L1
+  - platform: template
+    id: pfL1
+    name: "Power Factor L1"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "%"
+    icon: "mdi:cosine-wave"
+    device_class: "power_factor"
+    state_class: measurement
+
+  # Voltage L2
+  - platform: template
+    id: voltageL2
+    name: "Voltage L2"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "V"
+    icon: "mdi:sine-wave"
+    device_class: "Voltage"
+    state_class: measurement
+
+  # Current L2
+  - platform: template
+    id: currentL2
+    name: "Current L2"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "A"
+    icon: "mdi:current-ac"
+    device_class: "current"
+    state_class: measurement
+
+  # active power L2
+  - platform: template
+    id: powerL2
+    name: "Power L2"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    device_class: "power"
+    state_class: measurement
+
+  # reactive power L2
+  - platform: template
+    id: rpowerL2
+    name: "Reactive Power L2"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 1
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    device_class: "power"
+    state_class: measurement
+
+  # Frequency L2
+  - platform: template
+    id: frequencyL2
+    name: "Frequency L2"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "Hz"
+    icon: "mdi:sine-wave"
+    device_class: "frequency"
+    state_class: measurement
+
+  # Power Factor L2
+  - platform: template
+    id: pfL2
+    name: "Power Factor L2"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "%"
+    icon: "mdi:cosine-wave"
+    device_class: "power_factor"
+    state_class: measurement
+
+  # Voltage L3
+  - platform: template
+    id: voltageL3
+    name: "Voltage L3"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "V"
+    icon: "mdi:sine-wave"
+    device_class: "Voltage"
+    state_class: measurement
+
+  # Current L3
+  - platform: template
+    id: currentL3
+    name: "Current L3"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "A"
+    icon: "mdi:current-ac"
+    device_class: "current"
+    state_class: measurement
+
+  # active power L3
+  - platform: template
+    id: powerL3
+    name: "Power L3"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    device_class: "power"
+    state_class: measurement
+
+  # reactive power L3
+  - platform: template
+    id: rpowerL3
+    name: "Reactive Power L3"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 1
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    device_class: "power"
+    state_class: measurement
+
+  # Frequency L3
+  - platform: template
+    id: frequencyL3
+    name: "Frequency L3"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "Hz"
+    icon: "mdi:sine-wave"
+    device_class: "frequency"
+    state_class: measurement
+
+  # Power Factor L3
+  - platform: template
+    id: pfL3
+    name: "Power Factor L3"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.001
+    unit_of_measurement: "%"
+    icon: "mdi:cosine-wave"
+    device_class: "power_factor"
+    state_class: measurement
+
+  #energy consumption
+  - platform: template
+    id: energy
+    name: "Combined Energy Consumption"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+    unit_of_measurement: "kWh"
+    icon: "mdi:sigma"
+    device_class: "energy"
+    state_class: measurement
+
+  #forward energy consumption
+  - platform: template
+    id: energyf
+    name: "Forward Energy Consumption"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+    unit_of_measurement: "kWh"
+    icon: "mdi:sigma"
+    device_class: "energy"
+    state_class: measurement
+
+  #revrse energy consumption
+  - platform: template
+    id: energyr
+    name: "Revrse Energy Consumption"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+    unit_of_measurement: "kWh"
+    icon: "mdi:sigma"
+    device_class: "energy"
+    state_class: measurement
+
+  #L1 energy consumption
+  - platform: template
+    id: energyl1
+    name: "L1 Energy Consumption"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+    unit_of_measurement: "kWh"
+    icon: "mdi:sigma"
+    device_class: "energy"
+    state_class: measurement
+
+  #L2 energy consumption
+  - platform: template
+    id: energyl2
+    name: "L2 Energy Consumption"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+    unit_of_measurement: "kWh"
+    icon: "mdi:sigma"
+    device_class: "energy"
+    state_class: measurement
+
+  #L3 energy consumption
+  - platform: template
+    id: energyl3
+    name: "L3 Energy Consumption"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.01
+    unit_of_measurement: "kWh"
+    icon: "mdi:sigma"
+    device_class: "energy"
+    state_class: measurement
+
+number:
+  - platform: "tuya"
+    name: "Power Restoration Delay Protection"
+    number_datapoint: 119
+    min_value: 0
+    max_value: 9999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+  - platform: "tuya"
+    name: "Under Voltage and Over Voltage Protection Delay"
+    number_datapoint: 120
+    min_value: 1
+    max_value: 9999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+  - platform: "tuya"
+    name: "Over Current Limit Protection Delay"
+    number_datapoint: 121
+    min_value: 1
+    max_value: 9999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+  - platform: "tuya"
+    name: "Under Current Limit Protection Delay"
+    number_datapoint: 122
+    min_value: 1
+    max_value: 9999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+  - platform: "tuya"
+    name: "Over Voltage and Under Voltage Protection Delay"
+    number_datapoint: 123
+    min_value: 1
+    max_value: 9999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+  - platform: "tuya"
+    name: "Over Current Limit Delay Protection"
+    number_datapoint: 124
+    min_value: 1
+    max_value: 9999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+
+  - platform: "tuya"
+    name: "Lost Current Recovery Delay Time"
+    number_datapoint: 125
+    min_value: 1
+    max_value: 999
+    mode: box
+    step: 1
+    unit_of_measurement: "S"
+
+button:
+  - platform: restart
+    name: "Restart"
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "Europe/Moscow"
+
+api:
+  reboot_timeout: 5min
+
+web_server:
+  port: 80
+
+wifi:
+  ssid: $wifi_ssid
+  password: $wifi_password
+  ap:
+    ssid: "$name Fallback Hotspot"
+    password: $wifi_ap_password
+
+ota:
+  - platform: esphome
+
+captive_portal:
+
+logger:
+  baud_rate: 0
